@@ -4,7 +4,7 @@ Gets all the collections from Radarr and adds them to Plex Auto Collections
 To use:
 `python3 radarrToPAC.py -c /path/to/plex-auto-collections/config.yml -db /path/to/radarr/radarr.db`
 
-The above also has 3 optional arguments
+The above also has optional arguments
 ```
   -h, --help            show this help message and exit
   -c CONFIG_PATH, --config-path CONFIG_PATH, --config_path CONFIG_PATH
