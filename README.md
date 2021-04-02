@@ -6,6 +6,11 @@ To use:
 
 The above also has 3 optional arguments
 ```
+  -h, --help            show this help message and exit
+  -c CONFIG_PATH, --config-path CONFIG_PATH, --config_path CONFIG_PATH
+                        Run with desired config.yml file
+  -db DB_PATH, --db-path DB_PATH, --database-path DB_PATH
+                        The radarr database path
   -sync {append,sync}, --sync {append,sync}, --sync-mode {append,sync}
                         Sync mode, can be 'append' or 'sync'. Refer to PAC
                         wiki for more details
@@ -13,9 +18,14 @@ The above also has 3 optional arguments
                         4 modes, can be 'hide','default', 'hide_items' or
                         'show_items. Refer to PAC wiki for more details
   -add {false,true}, --add-to-radarr {false,true}, --add-radarr {false,true}
-                        Can be 'true' or 'false', 'hide_items'. Overwrites the
-                        config setting for all collections added here. Refer
-                        to PAC wiki for more details
+                        Can be 'true' or 'false'. Overwrites the config
+                        setting for all collections added here. Refer to PAC
+                        wiki for more details
+  -is {false,true}, --ignore-singles {false,true}, --ignore_single {false,true}
+                        Can be 'true' or 'false'. This will not add
+                        collections to the config where radarr only has 1
+                        movie in the collection
+
 ```
 
 If for example you use all the options, the added collections will look like:
