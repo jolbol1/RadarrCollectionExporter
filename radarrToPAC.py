@@ -57,7 +57,6 @@ def cleanNullTerms(original):
 
 
 def radarrToPAC(config_path, radarrDBpath, **kwargs):
-    print(kwargs['collection_mode'])
     print("{} Radarr to Plex Auto Collections is starting.".format(datetime.datetime.now()))
     with open(config_path) as parameters:
         config = yaml.safe_load(parameters)
