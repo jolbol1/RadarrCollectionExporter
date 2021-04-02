@@ -5,7 +5,7 @@ import sys
 import ast
 import datetime
 import argparse
-
+import logging as log
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-c", "--config-path", "--config_path",
@@ -36,10 +36,18 @@ parser.add_argument("-is", "--ignore-singles", "--ignore_single",
                     choices=['false', 'true'],
                     help="Can be 'true' or 'false'. This will not add collections to the config where radarr only has 1 movie in the collection",
                     type=str)
-
-
+parser.add_argument("-v", "--verbose",
+                    action = "store_true",
+                    dest="verbose",
+                    help="More detailed logs.")
 
 args = parser.parse_args()
+
+if args.verbose:
+    log.basicConfig(format="%(levelname)s: %(message)s", level=log.DEBUG)
+    log.info("Verbose output.")
+else:
+    log.basicConfig(format="%(levelname)s: %(message)s", level=log.INFO)
 
 def set_state(config, state):
     with open(config) as f:
@@ -54,10 +62,8 @@ def cleanNullTerms(original):
     original.update(filtered)
     return original
 
-
-
 def radarrToPAC(config_path, radarrDBpath, **kwargs):
-    print("{} Radarr to Plex Auto Collections is starting.".format(datetime.datetime.now()))
+    log.info("{} Radarr to Plex Auto Collections is starting.".format(datetime.datetime.now()))
     with open(config_path) as parameters:
         config = yaml.safe_load(parameters)
 
@@ -76,7 +82,7 @@ def radarrToPAC(config_path, radarrDBpath, **kwargs):
             dict = ast.literal_eval(collect)
             search_key = dict['name']
             if search_key in PACconfig:
-                print("Ignored {} as it is already in the config".format(search_key))
+                log.debug("Ignored {} as it is already in the config".format(search_key))
                 ignored += 1
             else:
                 variables = {'tmdb_id': int(dict['tmdbId']), 'add_to_radarr' : bool(True), 'collection_mode' : kwargs['collection_mode'], 'add_to_radarr' : kwargs['add_radarr'], 'sync_mode' : kwargs['sync_mode']}
@@ -86,8 +92,8 @@ def radarrToPAC(config_path, radarrDBpath, **kwargs):
                 PACconfig.update(collection)
                 set_state(config_path, PACconfig)
                 added += 1
-                print("Added {} to plex-auto-collections".format(search_key))
+                log.debug("Added {} to plex-auto-collections".format(search_key))
 
-    print("{} Radarr to Plex Auto Collections finished. Added: {}, Ignored: {}".format(datetime.datetime.now(), added, ignored))
+    log.info("{} Radarr to Plex Auto Collections finished. Added: {}, Ignored: {}".format(datetime.datetime.now(), added, ignored))
 
 radarrToPAC(args.config_path, args.db_path, sync_mode=args.sync_mode, collection_mode=args.collection_mode, add_radarr=args.add_radarr, ignore_single=args.ignore_single)
