@@ -29,8 +29,14 @@ parser.add_argument("-cm", "--collection-mode", "--collection_mode",
 parser.add_argument("-add", "--add-to-radarr", "--add-radarr",
                     dest="add_radarr",
                     choices=['false', 'true'],
-                    help="Can be 'true' or 'false', 'hide_items'. Overwrites the config setting for all collections added here. Refer to PAC wiki for more details",
+                    help="Can be 'true' or 'false'. Overwrites the config setting for all collections added here. Refer to PAC wiki for more details",
                     type=str)
+parser.add_argument("-is", "--ignore-singles", "--ignore_single",
+                    dest="ignore_single",
+                    choices=['false', 'true'],
+                    help="Can be 'true' or 'false'. This will not add collections to the config where radarr only has 1 movie in the collection",
+                    type=str)
+
 
 
 args = parser.parse_args()
@@ -57,9 +63,12 @@ def radarrToPAC(config_path, radarrDBpath, **kwargs):
         config = yaml.safe_load(parameters)
 
     PACconfig = config['collections']
+    if PACconfig is None:
+        PACconfig = {}
     radarrDB = sqlite3.connect(radarrDBpath)
-
     collections = radarrDB.execute("SELECT distinct Collection FROM Movies").fetchall()
+    if kwargs['ignore_single'] == 'true':
+        collections = radarrDB.execute("SELECT Collection, COUNT(*) FROM Movies GROUP BY Collection HAVING COUNT(*) > 1").fetchall()
     ignored = 0
     added = 0
     for row in collections:
@@ -67,19 +76,19 @@ def radarrToPAC(config_path, radarrDBpath, **kwargs):
             collect = str(row[0])
             dict = ast.literal_eval(collect)
             search_key = dict['name']
-            if dict['name'] in PACconfig:
-                print("Ignored {} as it is already in the config".format(dict['name']))
+            if search_key in PACconfig:
+                print("Ignored {} as it is already in the config".format(search_key))
                 ignored += 1
             else:
                 variables = {'tmdb_id': int(dict['tmdbId']), 'add_to_radarr' : bool(True), 'collection_mode' : kwargs['collection_mode'], 'add_to_radarr' : kwargs['add_radarr'], 'sync_mode' : kwargs['sync_mode']}
                 variables_clean = cleanNullTerms(variables)
-                collection_raw = {str(dict['name']): variables_clean}
+                collection_raw = {str(search_key): variables_clean}
                 collection = cleanNullTerms(collection_raw)
                 PACconfig.update(collection)
                 set_state(config_path, PACconfig)
                 added += 1
-                print("Added {} to plex-auto-collections".format(dict['name']))
+                print("Added {} to plex-auto-collections".format(search_key))
 
     print("{} Radarr to Plex Auto Collections finished. Added: {}, Ignored: {}".format(datetime.datetime.now(), added, ignored))
 
-radarrToPAC(args.config_path, args.db_path, sync_mode=args.sync_mode, collection_mode=args.collection_mode, add_radarr=args.add_radarr)
+radarrToPAC(args.config_path, args.db_path, sync_mode=args.sync_mode, collection_mode=args.collection_mode, add_radarr=args.add_radarr, ignore_single=args.ignore_single)
