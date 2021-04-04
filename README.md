@@ -25,6 +25,8 @@ The above also has optional arguments
                         Can be 'true' or 'false'. This will not add
                         collections to the config where radarr only has 1
                         movie in the collection
+  -v, --verbose         More detailed logs.
+
 
 ```
 
