@@ -40,6 +40,10 @@ parser.add_argument("-v", "--verbose",
                     action = "store_true",
                     dest="verbose",
                     help="More detailed logs.")
+parser.add_argument("-o", "--overwrite",
+                    action = "store_true",
+                    dest="overwrite",
+                    help="Overwrite collection with mathing name")
 
 args = parser.parse_args()
 
@@ -81,11 +85,11 @@ def radarrToPAC(config_path, radarrDBpath, **kwargs):
             collect = str(row[0])
             dict = ast.literal_eval(collect)
             search_key = dict['name']
-            if search_key in PACconfig:
+            if search_key in PACconfig and not args.overwrite:
                 log.debug("Ignored {} as it is already in the config".format(search_key))
                 ignored += 1
             else:
-                variables = {'tmdb_id': int(dict['tmdbId']), 'add_to_radarr' : bool(True), 'collection_mode' : kwargs['collection_mode'], 'add_to_radarr' : kwargs['add_radarr'], 'sync_mode' : kwargs['sync_mode']}
+                variables = {'tmdb_id': int(dict['tmdbId']), 'add_to_radarr' : bool(True), 'collection_mode' : kwargs['collection_mode'], 'add_to_radarr' : bool(kwargs['add_radarr']), 'sync_mode' : kwargs['sync_mode']}
                 variables_clean = cleanNullTerms(variables)
                 collection_raw = {str(search_key): variables_clean}
                 collection = cleanNullTerms(collection_raw)
