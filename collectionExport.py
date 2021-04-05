@@ -46,13 +46,11 @@ parser.add_argument("-o", "--overwrite",
 parser.add_argument("-pmm", "--plex-meta-manager",
                     action = "store_true",
                     dest="pmm",
-                    help="When using Plex-Meta-Manager,
-                    required=True)
+                    help="When using Plex-Meta-Manager")
 parser.add_argument("-pac", "--plex-auto-collections",
                     action = "store_true",
                     dest="pac",
-                    help="When using Plex-Auto-Collections,
-                    require=True)
+                    help="When using Plex-Auto-Collections")
 
 
 
@@ -64,6 +62,12 @@ if args.verbose:
 else:
     log.basicConfig(format="%(levelname)s: %(message)s", level=log.INFO)
 
+if args.pmm and args.pac:
+    log.info("Cannot specify Plex-Meta-Manager and Plex-Auto-Collections at the same time. Please specify only one.")
+    exit()
+if not args.pmm and not args.pac:
+    log.info("Please specify which app you would like to run. Plex-Meta-Manager -pmm or Plex-Auto-Collections -pac")
+    exit()
 
 def cleanNullTerms(original):
     filtered = {k: v for k, v in original.items() if v is not None}
