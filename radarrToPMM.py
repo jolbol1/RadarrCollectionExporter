@@ -5,7 +5,6 @@ import ast
 import datetime
 import argparse
 import logging as log
-import util
 import ruamel.yaml
 
 parser = argparse.ArgumentParser()
