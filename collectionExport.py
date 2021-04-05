@@ -23,7 +23,7 @@ parser.add_argument("-sync", "--sync", "--sync-mode",
 parser.add_argument("-cm", "--collection-mode", "--collection_mode",
                     dest="collection_mode",
                     choices=['hide', 'default', 'hide_items', 'show_items'],
-                    help="4 modes, can be 'hide','default', 'hide_items' or 'show_items. Refer to PAC wiki for more details",
+                    help="4 modes, can be 'hide','default', 'hide_items' or 'show_items. Refer to PAC/PMM wiki for more details",
                     type=str)
 parser.add_argument("-add", "--add-to-radarr", "--add-radarr",
                     dest="add_radarr",
@@ -51,6 +51,11 @@ parser.add_argument("-pac", "--plex-auto-collections",
                     action = "store_true",
                     dest="pac",
                     help="When using Plex-Auto-Collections")
+parser.add_argument("-search", "--search_radarr", "--search-radarr",
+                    dest="search",
+                    choices=['false', 'true'],
+                    help="Can be 'true' or 'false'. Overwrites the config setting for all collections added here. Should it search radarr for movie. Refer to PAC/PMM wiki for more details",
+                    type=str)
 
 
 
@@ -141,11 +146,11 @@ def radarrToPAC(config_path, radarrDBpath, **kwargs):
             if args.pac:
                 variables = {'tmdb_id': int(dict['tmdbId']), 'collection_mode' : kwargs['collection_mode'], 'add_to_radarr' : bool(kwargs['add_radarr']), 'sync_mode' : kwargs['sync_mode']}
             elif args.pmm:
-                variables = {'tmdb_collection': int(dict['tmdbId']), 'collection_mode' : kwargs['collection_mode'], 'add_to_arr' : bool(kwargs['add_radarr']), 'sync_mode' : kwargs['sync_mode']}
+                variables = {'tmdb_collection': int(dict['tmdbId']), 'collection_mode' : kwargs['collection_mode'], 'radarr_add' : bool(kwargs['add_radarr']), 'sync_mode' : kwargs['sync_mode'], 'radarr_search' : bool(kwargs['search'])}
             variables_clean = cleanNullTerms(variables)
             # Add comment to start of radarrToPMM entries
             if added is 0 and first_run:
-                PACconfig.yaml_set_comment_before_after_key(search_key, before="\n ############################# \n # Added by RadarrToPMM \n Please leve this and alll the collections below at end  \n ############################# \n")                
+                PACconfig.yaml_set_comment_before_after_key(search_key, before="\n ############################# \n # Added by RadarrToPMM \n Please leave this and all the collections below at end  \n ############################# \n")                
             # Set entry into the config
             PACconfig[search_key] = variables_clean             
             added += 1
@@ -155,4 +160,4 @@ def radarrToPAC(config_path, radarrDBpath, **kwargs):
         ruamel.yaml.dump(loaded_config, conf, ruamel.yaml.RoundTripDumper)   
     log.info("{} Radarr to Plex Auto Collections finished. Added: {}, Ignored: {}".format(datetime.datetime.now(), added, ignored))
 
-radarrToPAC(args.config_path, args.db_path, sync_mode=args.sync_mode, collection_mode=args.collection_mode, add_radarr=args.add_radarr, ignore_single=args.ignore_single)
+radarrToPAC(args.config_path, args.db_path, sync_mode=args.sync_mode, collection_mode=args.collection_mode, add_radarr=args.add_radarr, ignore_single=args.ignore_single, search=args.search)
