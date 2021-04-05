@@ -6,6 +6,7 @@ import datetime
 import argparse
 import logging as log
 import ruamel.yaml
+import shutil
 
 parser = argparse.ArgumentParser()
 parser.add_argument(dest="config_path",
@@ -42,10 +43,17 @@ parser.add_argument("-o", "--overwrite",
                     action = "store_true",
                     dest="overwrite",
                     help="Overwrite collection with mathing name")
-parser.add_argument("-pmm", "--plexmetamanager",
+parser.add_argument("-pmm", "--plex-meta-manager",
                     action = "store_true",
                     dest="pmm",
-                    help="Overwrite collection with mathing name")
+                    help="When using Plex-Meta-Manager,
+                    required=True)
+parser.add_argument("-pac", "--plex-auto-collections",
+                    action = "store_true",
+                    dest="pac",
+                    help="When using Plex-Auto-Collections,
+                    require=True)
+
 
 
 args = parser.parse_args()
@@ -85,6 +93,7 @@ def radarrToPAC(config_path, radarrDBpath, **kwargs):
         with open(config_path, "r") as conf:
         # Load the yaml config
             loaded_config = ruamel.yaml.load(conf, ruamel.yaml.RoundTripLoader) 
+            shutil.copy(config_path, config_path + ".backup")
             #Close it now we have it saved as a var
             conf.close() 
         # Grab the collections from the config
@@ -125,7 +134,10 @@ def radarrToPAC(config_path, radarrDBpath, **kwargs):
             ignored += 1
         else:
             # Set up the collection entry.
-            variables = {'tmdb_collection': int(dict['tmdbId']), 'collection_mode' : kwargs['collection_mode'], 'add_to_arr' : bool(kwargs['add_radarr']), 'sync_mode' : kwargs['sync_mode']}
+            if args.pac:
+                variables = {'tmdb_id': int(dict['tmdbId']), 'collection_mode' : kwargs['collection_mode'], 'add_to_radarr' : bool(kwargs['add_radarr']), 'sync_mode' : kwargs['sync_mode']}
+            elif args.pmm:
+                variables = {'tmdb_collection': int(dict['tmdbId']), 'collection_mode' : kwargs['collection_mode'], 'add_to_arr' : bool(kwargs['add_radarr']), 'sync_mode' : kwargs['sync_mode']}
             variables_clean = cleanNullTerms(variables)
             # Add comment to start of radarrToPMM entries
             if added is 0 and first_run:
